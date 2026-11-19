@@ -8,13 +8,15 @@ set -euo pipefail
 
 KIT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 BUILD_ROOT="${BUILD_ROOT:-$PWD/lumina-build}"
-SRC_DIR="$BUILD_ROOT/lumina-mail"
+SRC_DIR="$BUILD_ROOT/claws-src"
 STAGE_DIR="$BUILD_ROOT/stage"
 BUNDLE_DIR="$KIT_DIR/installer/dist-bundle"
 OUT_DIR="$BUILD_ROOT/artifacts"
 
 echo "[1/7] Installing audited open-source MSYS2 UCRT64 toolchain & dependencies..."
-pacman -Syu --noconfirm
+if [ -z "${GITHUB_ACTIONS:-}" ]; then
+  pacman -Syu --noconfirm
+fi
 pacman -S --needed --noconfirm \
   mingw-w64-ucrt-x86_64-toolchain \
   mingw-w64-ucrt-x86_64-autotools \

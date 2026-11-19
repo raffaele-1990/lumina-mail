@@ -50,16 +50,23 @@ jobs:
             git zip
 
       - name: Build Hardened Lumina Mail Binary & NSIS Installer
+        env:
+          BUILD_ROOT: ${{ github.workspace }}/lumina-build
         run: |
-          chmod +x lumina-mail-kit/scripts/build-luminamail-msys2.sh
-          ./lumina-mail-kit/scripts/build-luminamail-msys2.sh
+          if [ -f scripts/build-luminamail-msys2.sh ]; then
+            SCRIPT_PATH="scripts/build-luminamail-msys2.sh"
+          else
+            SCRIPT_PATH="lumina-mail/scripts/build-luminamail-msys2.sh"
+          fi
+          chmod +x "$SCRIPT_PATH"
+          "./$SCRIPT_PATH"
 
       - name: Upload Windows Binary, Installer, SBOM & SHA256SUMS
         uses: actions/upload-artifact@v4
         with:
           name: lumina-mail-win64-hardened
           path: |
-            lumina-build/artifacts/LuminaMail-Setup-*.exe
-            lumina-build/artifacts/LuminaMail-*-portable-win64.zip
-            lumina-build/artifacts/SHA256SUMS.txt
-            lumina-build/artifacts/sbom-msys2-ucrt64.txt
+            ${{ github.workspace }}/lumina-build/artifacts/LuminaMail-Setup-*.exe
+            ${{ github.workspace }}/lumina-build/artifacts/LuminaMail-*-portable-win64.zip
+            ${{ github.workspace }}/lumina-build/artifacts/SHA256SUMS.txt
+            ${{ github.workspace }}/lumina-build/artifacts/sbom-msys2-ucrt64.txt

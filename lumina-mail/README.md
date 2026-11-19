@@ -12,18 +12,8 @@
 [![Security](https://img.shields.io/badge/Hardening-ASLR%20%7C%20DEP%20%7C%20No--JS-0F766E?style=flat-square)](#sicurezza--audit-open-source)
 [![Build](https://img.shields.io/badge/Toolchain-MSYS2%20UCRT64-6366F1?style=flat-square)](scripts/build-luminamail-msys2.sh)
 
-[Caratteristiche](#-caratteristiche-principali) • [Anteprima UI](#-anteprima-interfaccia) • [Sicurezza & Plugin](#-sicurezza--audit-open-source) • [Compilazione](#-compilazione-su-windows)
+[Caratteristiche](#-caratteristiche-principali) • [Sicurezza & Plugin](#-sicurezza--audit-open-source) • [Compilazione](#-compilazione-su-windows) • [Struttura](#-struttura-del-progetto)
 
-</div>
-
----
-
-## ✨ Anteprima Interfaccia
-
-<div align="center">
-  <img src="docs/screenshots/lumina-mail-preview.png" alt="Lumina Mail - Safari on Windows GTK3 UI Preview" width="95%" />
-  <br />
-  <sub><i>UI Theme & Layout Preview: tema GTK3 <code>lumina-safari.css</code> con barra satinata, pulsanti pill Aqua, ricerca in alto a destra e schede stile Safari.</i></sub>
 </div>
 
 ---
@@ -32,7 +22,7 @@
 
 | Icona | Funzionalità | Dettagli Tecnici |
 | :---: | :--- | :--- |
-| 🎨 | **Restyling Safari su Windows** | Tema GTK3 nativo (`lumina-safari.css`) con toolbar satinata perlata, pulsanti *pill-shaped*, schede stile Safari e barra di ricerca `GtkSearchEntry` integrata in alto a destra. |
+| 🎨 | **Restyling Safari su Windows** | Tema GTK3 nativo (`themes/lumina-safari.css`) con toolbar satinata perlata, pulsanti *pill-shaped*, schede stile Safari e barra di ricerca `GtkSearchEntry` integrata in alto a destra. |
 | 🛡️ | **Rendering HTML Senza JavaScript** | Utilizza **LiteHTML + Gumbo-Parser** al posto di WebKit: zero esecuzione di script remoti, zero superficie d'attacco browser/DOM e consumo RAM ridotto. |
 | 🔐 | **Crittografia End-to-End Nativa** | Supporto completo a **PGP/MIME (RFC 3156)** e **S/MIME X.509** tramite GnuPG/GPGME, oltre a password cifrate con **GnuTLS** (`--with-password-encryption=gnutls`). |
 | 📄 | **Anteprima PDF & TNEF Sicura** | Lettura integrata degli allegati PDF con **Poppler** e decodifica automatica dei file `winmail.dat` di Outlook tramite **libytnef**. |
@@ -72,32 +62,26 @@ LDFLAGS (Win64)   : -mwindows -Wl,--nxcompat -Wl,--dynamicbase -Wl,--high-entrop
 
 ## 🛠️ Compilazione su Windows
 
-### Opzione 1 — Build Locale Automatica (MSYS2 UCRT64)
-1. Installa [MSYS2](https://www.msys2.org/) e apri il terminale **MSYS2 UCRT64**.
-2. Esegui lo script di build end-to-end:
-   ```bash
-   bash lumina-mail-kit/scripts/build-luminamail-msys2.sh
-   ```
-3. Troverai in `lumina-build/artifacts/`:
-   - `LuminaMail-Setup-1.0.0-win64.exe` *(Installer open-source NSIS)*
-   - `LuminaMail-1.0.0-portable-win64.zip` *(Versione portabile con DLL raccolte via `ntldd`)*
-   - `sbom-msys2-ucrt64.txt` & `SHA256SUMS.txt`
+### Opzione 1 — Build Automatica su GitHub Actions
+1. Carica il contenuto della cartella `lumina-mail/` nel tuo repository GitHub (includendo `.github/workflows/build-windows-luminamail.yml`).
+2. Fai push sul branch `lumina-main` o `main`, oppure avvia manualmente il workflow dalla scheda **Actions → Build Lumina Mail (Windows x64 Hardened)**.
+3. Scarica l'artefatto **`lumina-mail-win64-hardened`** contenente `LuminaMail-Setup-1.0.0-win64.exe`, lo ZIP portabile, `sbom-msys2-ucrt64.txt` e `SHA256SUMS.txt`.
 
-### Opzione 2 — Build Automatica nel Cloud (GitHub Actions)
-1. Copia `.github/workflows/build-windows-luminamail.yml` nella root `.github/workflows/` del tuo repository.
-2. Fai push sul branch `lumina-main` (o avvia manualmente il workflow dalla scheda **Actions**).
-3. Scarica il pacchetto **`lumina-mail-win64-hardened`** direttamente dagli artefatti della pipeline.
+### Opzione 2 — Build Locale (MSYS2 UCRT64)
+1. Installa [MSYS2](https://www.msys2.org/) e apri il terminale **MSYS2 UCRT64**.
+2. Dalla cartella `lumina-mail/` esegui:
+   ```bash
+   bash scripts/build-luminamail-msys2.sh
+   ```
 
 ---
 
-## 📁 Struttura del Kit
+## 📁 Struttura del Progetto
 
 ```text
-lumina-mail-kit/
+lumina-mail/
 ├── .github/workflows/
 │   └── build-windows-luminamail.yml   # Pipeline CI Windows x64 (MSYS2 UCRT64)
-├── docs/screenshots/
-│   └── lumina-mail-preview.png        # Anteprima UI tema Lumina Safari
 ├── installer/
 │   └── luminamail.nsi                 # Script installer open-source NSIS
 ├── patches/
