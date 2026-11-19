@@ -12,7 +12,7 @@
 [![Security](https://img.shields.io/badge/Hardening-ASLR%20%7C%20DEP%20%7C%20No--JS-0F766E?style=flat-square)](#sicurezza--audit-open-source)
 [![Build](https://img.shields.io/badge/Toolchain-MSYS2%20UCRT64-6366F1?style=flat-square)](scripts/build-luminamail-msys2.sh)
 
-[Caratteristiche](#-caratteristiche-principali) • [Sicurezza & Plugin](#-sicurezza--audit-open-source) • [Compilazione](#-compilazione-su-windows) • [Struttura](#-struttura-del-progetto)
+[Caratteristiche](#-caratteristiche-principali) • [Sicurezza & Plugin](#-sicurezza--audit-open-source) • [Compilazione](#-compilazione-su-windows) • [Struttura](#-struttura-del-repository)
 
 </div>
 
@@ -63,23 +63,26 @@ LDFLAGS (Win64)   : -mwindows -Wl,--nxcompat -Wl,--dynamicbase -Wl,--high-entrop
 ## 🛠️ Compilazione su Windows
 
 ### Opzione 1 — Build Automatica su GitHub Actions
-1. Carica il contenuto della cartella `lumina-mail/` nel tuo repository GitHub (includendo `.github/workflows/build-windows-luminamail.yml`).
-2. Fai push sul branch `lumina-main` o `main`, oppure avvia manualmente il workflow dalla scheda **Actions → Build Lumina Mail (Windows x64 Hardened)**.
-3. Scarica l'artefatto **`lumina-mail-win64-hardened`** contenente `LuminaMail-Setup-1.0.0-win64.exe`, lo ZIP portabile, `sbom-msys2-ucrt64.txt` e `SHA256SUMS.txt`.
+1. Vai nella scheda **Actions** del repository su GitHub.
+2. Seleziona **Build Lumina Mail (Windows x64 Hardened)** → **Run workflow** (o esegui un `push` su `main` / `lumina-main`).
+3. Al termine della build (~10 minuti), scarica l'artefatto **`lumina-mail-win64-hardened`** contenente:
+   - `LuminaMail-Setup-1.0.0-win64.exe` *(Installer open-source NSIS)*
+   - `LuminaMail-1.0.0-portable-win64.zip` *(Versione portabile con DLL)*
+   - `sbom-msys2-ucrt64.txt` & `SHA256SUMS.txt`
 
 ### Opzione 2 — Build Locale (MSYS2 UCRT64)
 1. Installa [MSYS2](https://www.msys2.org/) e apri il terminale **MSYS2 UCRT64**.
-2. Dalla cartella `lumina-mail/` esegui:
+2. Dalla root del repository esegui:
    ```bash
    bash scripts/build-luminamail-msys2.sh
    ```
 
 ---
 
-## 📁 Struttura del Progetto
+## 📁 Struttura del Repository
 
 ```text
-lumina-mail/
+.
 ├── .github/workflows/
 │   └── build-windows-luminamail.yml   # Pipeline CI Windows x64 (MSYS2 UCRT64)
 ├── installer/
@@ -95,8 +98,10 @@ lumina-mail/
 ├── scripts/
 │   ├── build-luminamail-msys2.sh      # Script compilazione & packaging hardened
 │   └── make_ico.py                    # Generatore .ico multi-risoluzione
-└── themes/
-    └── lumina-safari.css              # Foglio di stile GTK3 Luminous Aqua
+├── themes/
+│   └── lumina-safari.css              # Foglio di stile GTK3 Luminous Aqua
+├── .gitignore
+└── README.md
 ```
 
 ---

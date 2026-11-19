@@ -1,8 +1,19 @@
-node_modules/
-build/
-dist/
-coverage/
+# Build & Staging Directories
+lumina-build/
+installer/dist-bundle/
+
+# Compiled Windows Binaries & Archives
+*.exe
+*.dll
+*.zip
+*.o
+*.lo
+*.la
+*.a
+*.res
+
+# Python & OS Artifacts
+__pycache__/
+*.pyc
 .DS_Store
-*.log
-.env*
-!.env.example
+Thumbs.db
