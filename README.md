@@ -4,7 +4,7 @@
 
 # Lumina Mail
 
-**Un client email desktop veloce, leggero e orientato alla privacy per Windows — basato su Claws Mail (C/GTK3), riprogettato con estetica *Safari on Windows / Luminous Aqua* e compilazione *security-hardened*.**
+**Un client email desktop veloce, leggero e orientato alla privacy per Windows — basato su Claws Mail (C/GTK3), con interfaccia moderna *Luminous Aqua* e compilazione *security-hardened*.**
 
 [![Platform](https://img.shields.io/badge/Platform-Windows%2010%20%2F%2011%20(x64)-0078D4?style=flat-square&logo=windows)](https://github.com)
 [![Engine](https://img.shields.io/badge/Core-C%20%2F%20GTK3-2484E8?style=flat-square)](https://gtk.org)
@@ -22,7 +22,7 @@
 
 | Icona | Funzionalità | Dettagli Tecnici |
 | :---: | :--- | :--- |
-| 🎨 | **Restyling Safari su Windows** | Tema GTK3 nativo (`themes/lumina-safari.css`) con toolbar satinata perlata, pulsanti *pill-shaped*, schede stile Safari e barra di ricerca `GtkSearchEntry` integrata in alto a destra. |
+| 🎨 | **Interfaccia Moderna Luminous Aqua** | Tema GTK3 nativo (`themes/lumina-safari.css`) con toolbar satinata perlata, pulsanti *pill-shaped*, schede moderne e barra di ricerca `GtkSearchEntry` integrata in alto a destra. |
 | 🛡️ | **Rendering HTML Senza JavaScript** | Utilizza **LiteHTML + Gumbo-Parser** al posto di WebKit: zero esecuzione di script remoti, zero superficie d'attacco browser/DOM e consumo RAM ridotto. |
 | 🔐 | **Crittografia End-to-End Nativa** | Supporto completo a **PGP/MIME (RFC 3156)** e **S/MIME X.509** tramite GnuPG/GPGME, oltre a password cifrate con **GnuTLS** (`--with-password-encryption=gnutls`). |
 | 📄 | **Anteprima PDF & TNEF Sicura** | Lettura integrata degli allegati PDF con **Poppler** e decodifica automatica dei file `winmail.dat` di Outlook tramite **libytnef**. |
