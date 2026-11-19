@@ -1,0 +1,6 @@
+{
+  "name": "Lumina Mail",
+  "description": "Windows x64 C/GTK3 email client fork build kit, Luminous Aqua theme, and security-hardened GitHub Actions CI.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

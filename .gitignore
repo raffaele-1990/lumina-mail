@@ -1,4 +1,6 @@
 # Build & Staging Directories
+node_modules/
+dist/
 lumina-build/
 installer/dist-bundle/
 
