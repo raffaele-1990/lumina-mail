@@ -1,0 +1,65 @@
+name: Build Lumina Mail (Windows x64 Hardened)
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main, lumina-main ]
+
+permissions:
+  contents: read
+
+jobs:
+  build-win64:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
+
+    steps:
+      - name: Checkout Lumina Mail Kit
+        uses: actions/checkout@v4
+
+      - name: Setup MSYS2 UCRT64
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: UCRT64
+          update: true
+          install: >-
+            base-devel
+            mingw-w64-ucrt-x86_64-toolchain
+            mingw-w64-ucrt-x86_64-autotools
+            mingw-w64-ucrt-x86_64-pkgconf
+            mingw-w64-ucrt-x86_64-ntldd
+            mingw-w64-ucrt-x86_64-nsis
+            mingw-w64-ucrt-x86_64-gtk3
+            mingw-w64-ucrt-x86_64-glib2
+            mingw-w64-ucrt-x86_64-gnutls
+            mingw-w64-ucrt-x86_64-libetpan
+            mingw-w64-ucrt-x86_64-curl
+            mingw-w64-ucrt-x86_64-enchant
+            mingw-w64-ucrt-x86_64-nettle
+            mingw-w64-ucrt-x86_64-gpgme
+            mingw-w64-ucrt-x86_64-gnupg
+            mingw-w64-ucrt-x86_64-poppler
+            mingw-w64-ucrt-x86_64-gumbo-parser
+            mingw-w64-ucrt-x86_64-cairo
+            mingw-w64-ucrt-x86_64-libical
+            mingw-w64-ucrt-x86_64-libarchive
+            mingw-w64-ucrt-x86_64-libytnef
+            mingw-w64-ucrt-x86_64-bogofilter
+            git zip
+
+      - name: Build Hardened Lumina Mail Binary & NSIS Installer
+        run: |
+          chmod +x lumina-mail-kit/scripts/build-luminamail-msys2.sh
+          ./lumina-mail-kit/scripts/build-luminamail-msys2.sh
+
+      - name: Upload Windows Binary, Installer, SBOM & SHA256SUMS
+        uses: actions/upload-artifact@v4
+        with:
+          name: lumina-mail-win64-hardened
+          path: |
+            lumina-build/artifacts/LuminaMail-Setup-*.exe
+            lumina-build/artifacts/LuminaMail-*-portable-win64.zip
+            lumina-build/artifacts/SHA256SUMS.txt
+            lumina-build/artifacts/sbom-msys2-ucrt64.txt

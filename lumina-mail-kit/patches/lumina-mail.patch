@@ -1,0 +1,452 @@
+diff --git a/configure.ac b/configure.ac
+index 7d17500..e418e44 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -4,7 +4,7 @@ AC_PREREQ([2.69])
+ m4_define([claws_VERSION],
+     m4_esyscmd([./get-git-version]))
+ 
+-AC_INIT([claws-mail],
++AC_INIT([lumina-mail],
+     m4_defn([claws_VERSION]))
+ AC_CONFIG_SRCDIR([src/main.c])
+ AC_CONFIG_AUX_DIR([config])
+@@ -12,7 +12,7 @@ AC_CONFIG_MACRO_DIR([m4])
+ AC_CANONICAL_TARGET
+ AM_INIT_AUTOMAKE([no-define])
+ 
+-PACKAGE=claws-mail
++PACKAGE=lumina-mail
+ 
+ dnl version number
+ INTERFACE_AGE=0
+@@ -520,9 +520,9 @@ AC_ARG_WITH(config-dir,    [  --with-config-dir=RCDIR      Local configuration d
+ dnl Set correct default value based on platform
+ if test x"$ac_cv_with_config_dir" = x""; then
+ 	if test x"$platform_win32" = xyes; then
+-		ac_cv_with_config_dir="Claws-mail"
++		ac_cv_with_config_dir="LuminaMail"
+ 	else
+-		ac_cv_with_config_dir=".claws-mail"
++		ac_cv_with_config_dir=".luminamail"
+ 	fi
+ fi
+ AC_DEFINE_UNQUOTED(CFG_RC_DIR, "$ac_cv_with_config_dir", Configuration directory)
+@@ -2156,6 +2156,7 @@ po/Makefile.in
+ src/common/version.h
+ src/Makefile
+ src/w32-resource.rc
++src/luminamail.exe.manifest
+ src/common/Makefile
+ src/common/passcrypt.h
+ src/common/tests/Makefile
+diff --git a/src/Makefile.am b/src/Makefile.am
+index 8d80b75..98d1fae 100644
+--- a/src/Makefile.am
++++ b/src/Makefile.am
+@@ -17,18 +17,18 @@ include $(top_srcdir)/tests.mk
+ SUBDIRS += tests
+ endif
+ 
+-bin_PROGRAMS = claws-mail
++bin_PROGRAMS = luminamail
+ 
+ if PLATFORM_WIN32
+ %.o : %.rc
+ 	$(LIBTOOL) --mode=compile --tag=RC $(RC) -I$(srcdir) -i $< -o $@
+ 
+-claws_mail_platform_ldflags = -Wl,w32-resource.o \
++luminamail_platform_ldflags = -Wl,w32-resource.o \
+ 	-Wl,--export-all-symbols,--out-implib=libclaws.a
+-claws_mail_deps = w32-resource.o
++luminamail_deps = w32-resource.o
+ else
+-claws_mail_platform_ldflags =
+-claws_mail_deps =
++luminamail_platform_ldflags =
++luminamail_deps =
+ endif
+ 
+ alt_abook_source = \
+@@ -122,7 +122,7 @@ abook_headers = \
+ 	pine.h \
+ 	vcard.h
+ 
+-claws_mail_SOURCES = \
++luminamail_SOURCES = \
+ 	account.c \
+ 	action.c \
+ 	addrcache.c \
+@@ -369,7 +369,8 @@ CLEANFILES = \
+ 
+ EXTRA_DIST = \
+ 	claws-contacts.xml \
+-	w32-logo.ico \
++	luminamail.ico \
++	luminamail.exe.manifest.in \
+ 	pixmaps/addr_one.xpm \
+ 	pixmaps/addr_two.xpm \
+ 	pixmaps/address_book.xpm \
+@@ -575,14 +576,14 @@ IFLAGS = \
+ 	-I$(srcdir)/gtk \
+ 	-I$(srcdir)/etpan
+ 
+-claws_mail_LDFLAGS = \
+-	$(claws_mail_platform_ldflags)
++luminamail_LDFLAGS = \
++	$(luminamail_platform_ldflags)
+ 
+-claws_mail_DEPENDENCIES = $(claws_mail_deps) \
++luminamail_DEPENDENCIES = $(luminamail_deps) \
+ 	$(etpan_library) \
+ 	gtk/libclawsgtk.la
+ 
+-claws_mail_LDADD = \
++luminamail_LDADD = \
+ 	$(etpan_library) \
+ 	gtk/libclawsgtk.la \
+ 	$(ENCHANT_LIBS) \
+@@ -602,10 +603,13 @@ claws_mail_LDADD = \
+ 	$(SVG_LIBS) \
+ 	$(CONTACTS_LIBS)
+ 
++themedir=$(datadir)/lumina-mail/themes
++theme_DATA=themes/lumina-safari.css
++
+ pixmapdir=$(datadir)/icons/hicolor/48x48/apps
+ 
+ AM_CPPFLAGS = \
+-	-DG_LOG_DOMAIN=\"Claws-Mail\" \
++	-DG_LOG_DOMAIN=\"Lumina-Mail\" \
+ 	-DLOCALEDIR=\""$(localedir)"\" \
+ 	-DPIXMAP_DIR=\""$(pixmapdir)"\" \
+ 	-DMANUALDIR=\""$(manualdir)"\" \
+diff --git a/src/common/defs.h b/src/common/defs.h
+index fa91e3b..056014a 100644
+--- a/src/common/defs.h
++++ b/src/common/defs.h
+@@ -76,7 +76,7 @@
+ #define ADDRESS_BOOK		"addressbook.xml"
+ #define ADDRBOOK_DIR		"addrbook"
+ #define MANUAL_HTML_INDEX	"claws-mail-manual.html"
+-#define HOMEPAGE_URI		"https://www.claws-mail.org/"
++#define HOMEPAGE_URI		"https://luminamail.org/"
+ #define MANUAL_URI		"https://www.claws-mail.org/documentation.php"
+ #define FAQ_URI			"https://www.claws-mail.org/faq/index.php"
+ #define PLUGINS_URI		"https://www.claws-mail.org/plugins.php"
+diff --git a/src/common/plugin.c b/src/common/plugin.c
+index 1ae02be..02bc6fa 100644
+--- a/src/common/plugin.c
++++ b/src/common/plugin.c
+@@ -656,12 +656,19 @@ void plugin_unload_all(const gchar *type)
+ void plugin_load_standard_plugins (void)
+ {
+ 	static const char *names[] = {
+-#ifdef G_OS_WIN32 
++#ifdef G_OS_WIN32
++		"pgpcore",
+ 		"pgpmime",
+-		"pgpinline",
+-#else
+-		/* post-2.5 maybe 
+-		"bogofilter", */
++		"smime",
++		"litehtml_viewer",
++		"pdf_viewer",
++		"notification",
++		"vcalendar",
++		"tnef_parse",
++		"archive",
++		"att_remover",
++		"address_keeper",
++		"bogofilter",
+ #endif
+ 		NULL
+ 	};
+diff --git a/src/common/version.h.in b/src/common/version.h.in
+index fda77c1..ca20c55 100644
+--- a/src/common/version.h.in
++++ b/src/common/version.h.in
+@@ -26,7 +26,7 @@
+ 					  (((guint32)c) <<  8) |  ((guint32)d)      )
+ 
+ #define PACKAGE			"@PACKAGE@"
+-#define PACKAGE_FRIENDLY	"Claws Mail"
++#define PACKAGE_FRIENDLY	"Lumina Mail"
+ #define VERSION			"@VERSION@"
+ #define PROG_VERSION		PACKAGE_FRIENDLY" "VERSION
+ #define VERSION_NUMERIC		MAKE_NUMERIC_VERSION(@MAJOR_VERSION@, @MINOR_VERSION@, \
+diff --git a/src/folderview.c b/src/folderview.c
+index e1195a7..636f801 100644
+--- a/src/folderview.c
++++ b/src/folderview.c
+@@ -459,6 +459,9 @@ static GtkWidget *folderview_ctree_create(FolderView *folderview)
+ 					   titles);
+ 
+ 	gtk_widget_set_name(GTK_WIDGET(ctree), "folderview_sctree");
++	gtk_style_context_add_class(gtk_widget_get_style_context(ctree), "lumina-sidebar");
++	gtk_cmclist_set_row_height(GTK_CMCLIST(ctree), 28);
++	gtk_cmctree_set_line_style(GTK_CMCTREE(ctree), GTK_CMCTREE_LINES_NONE);
+ 
+ 	if (prefs_common.show_col_headers == FALSE)
+ 		gtk_cmclist_column_titles_hide(GTK_CMCLIST(ctree));
+diff --git a/src/main.c b/src/main.c
+index a5b2eaa..30c9d72 100644
+--- a/src/main.c
++++ b/src/main.c
+@@ -1435,6 +1435,15 @@ int main(int argc, char *argv[])
+ 	num_folder_class = g_list_length(folder_get_list());
+ 
+ 	plugin_load_all("GTK3");
++	{
++		gchar *lumina_init_marker = g_build_filename(get_rc_dir(), ".lumina_plugins_init", NULL);
++		if (!is_file_exist(lumina_init_marker)) {
++			plugin_load_standard_plugins();
++			plugin_save_list();
++			g_file_set_contents(lumina_init_marker, "1\n", -1, NULL);
++		}
++		g_free(lumina_init_marker);
++	}
+ 
+ 	if (g_list_length(folder_get_list()) != num_folder_class) {
+ 		debug_print("new folders loaded, reloading processing rules\n");
+diff --git a/src/mainwindow.c b/src/mainwindow.c
+index 87f8c06..250e371 100644
+--- a/src/mainwindow.c
++++ b/src/mainwindow.c
+@@ -38,6 +38,42 @@
+ #include "foldersel.h"
+ #include "quicksearch.h"
+ #include "summaryview.h"
++
++static void lumina_load_safari_theme(void)
++{
++	GtkCssProvider *provider = gtk_css_provider_new();
++	GError *error = NULL;
++	gchar *user_css = g_build_filename(get_rc_dir(), "lumina-safari.css", NULL);
++	gchar *sys_css = NULL;
++	const gchar *css_path = NULL;
++
++#ifdef G_OS_WIN32
++	gchar *exe_dir = g_win32_get_package_installation_directory_of_module(NULL);
++	sys_css = g_build_filename(exe_dir, "share", "lumina-mail", "themes", "lumina-safari.css", NULL);
++	g_free(exe_dir);
++#else
++	sys_css = g_build_filename(DATADIR, "lumina-mail", "themes", "lumina-safari.css", NULL);
++#endif
++
++	if (g_file_test(user_css, G_FILE_TEST_EXISTS))
++		css_path = user_css;
++	else if (g_file_test(sys_css, G_FILE_TEST_EXISTS))
++		css_path = sys_css;
++
++	if (css_path && gtk_css_provider_load_from_path(provider, css_path, &error)) {
++		gtk_style_context_add_provider_for_screen(
++			gdk_screen_get_default(),
++			GTK_STYLE_PROVIDER(provider),
++			GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
++	} else if (error) {
++		g_warning("Lumina CSS load error: %s", error->message);
++		g_clear_error(&error);
++	}
++
++	g_object_unref(provider);
++	g_free(user_css);
++	g_free(sys_css);
++}
+ #include "summary_search.h"
+ #include "messageview.h"
+ #include "mimeview.h"
+@@ -1441,8 +1477,11 @@ MainWindow *main_window_create()
+ 	debug_print("Creating main window...\n");
+ 	mainwin = g_new0(MainWindow, 1);
+ 
++	lumina_load_safari_theme();
++
+ 	/* main window */
+ 	window = GTK_WIDGET(gtkut_window_new(GTK_WINDOW_TOPLEVEL, "mainwindow"));
++	gtk_style_context_add_class(gtk_widget_get_style_context(window), "lumina-mainwindow");
+ 	gtk_window_set_title(GTK_WINDOW(window), PROG_VERSION);
+ 	gtk_window_set_resizable(GTK_WINDOW(window), TRUE);
+ #ifdef GENERIC_UMPC
+@@ -3790,6 +3829,8 @@ static void main_window_set_widgets(MainWindow *mainwin, LayoutType layout_mode)
+ 		return;
+ 	}
+ 
++	gtk_paned_set_wide_handle(GTK_PANED(hpaned), FALSE);
++	gtk_paned_set_wide_handle(GTK_PANED(vpaned), FALSE);
+ 	mainwin->hpaned = hpaned;
+ 	mainwin->vpaned = vpaned;
+ 
+diff --git a/src/mimeview.c b/src/mimeview.c
+index 92013a0..4c9f3b0 100644
+--- a/src/mimeview.c
++++ b/src/mimeview.c
+@@ -374,6 +374,7 @@ MimeView *mimeview_create(MainWindow *mainwin)
+ 
+ 	mime_notebook = gtk_notebook_new();
+ 	gtk_widget_set_name(GTK_WIDGET(mime_notebook), "mime_notebook");
++	gtk_style_context_add_class(gtk_widget_get_style_context(mime_notebook), "lumina-tabs");
+ 	gtk_widget_show(mime_notebook);
+ 	gtk_widget_set_can_focus(mime_notebook, FALSE);
+ 	gtk_notebook_set_show_tabs(GTK_NOTEBOOK(mime_notebook), FALSE);
+diff --git a/src/summaryview.c b/src/summaryview.c
+index f6da67e..c5d521d 100644
+--- a/src/summaryview.c
++++ b/src/summaryview.c
+@@ -6718,6 +6718,9 @@ static GtkWidget *summary_ctree_create(SummaryView *summaryview)
+ 		(N_SUMMARY_COLS, col_pos[S_COL_SUBJECT], titles);
+ 
+ 	gtk_widget_set_name(GTK_WIDGET(ctree), "summaryview_sctree");
++	gtk_style_context_add_class(gtk_widget_get_style_context(ctree), "lumina-messagelist");
++	gtk_cmclist_set_row_height(GTK_CMCLIST(ctree), 30);
++	gtk_cmctree_set_line_style(GTK_CMCTREE(ctree), GTK_CMCTREE_LINES_NONE);
+ 
+ 	if (prefs_common.show_col_headers == FALSE)
+ 		gtk_cmclist_column_titles_hide(GTK_CMCLIST(ctree));
+diff --git a/src/toolbar.c b/src/toolbar.c
+index 01a005b..dfd8a19 100644
+--- a/src/toolbar.c
++++ b/src/toolbar.c
+@@ -34,6 +34,49 @@
+ #include "main.h"
+ #include "mainwindow.h"
+ #include "summaryview.h"
++#include "quicksearch.h"
++
++static void lumina_apply_pill_style(GtkWidget *widget, gpointer user_data)
++{
++	gboolean is_primary = GPOINTER_TO_INT(user_data);
++
++	if (GTK_IS_BUTTON(widget)) {
++		GtkStyleContext *ctx = gtk_widget_get_style_context(widget);
++		gtk_style_context_add_class(ctx, "lumina-pill-btn");
++		if (is_primary)
++			gtk_style_context_add_class(ctx, "lumina-primary-action");
++	} else if (GTK_IS_CONTAINER(widget)) {
++		gtk_container_foreach(GTK_CONTAINER(widget), lumina_apply_pill_style, user_data);
++	}
++}
++
++static void lumina_toolbar_search_changed_cb(GtkSearchEntry *entry, gpointer data)
++{
++	MainWindow *mainwin = (MainWindow *)data;
++	const gchar *text;
++
++	if (!mainwin || !mainwin->summaryview || !mainwin->summaryview->quicksearch)
++		return;
++
++	text = gtk_entry_get_text(GTK_ENTRY(entry));
++	quicksearch_set(mainwin->summaryview->quicksearch,
++			ADVANCED_SEARCH_EXTENDED, text);
++}
++
++static void lumina_toolbar_search_activate_cb(GtkEntry *entry, gpointer data)
++{
++	MainWindow *mainwin = (MainWindow *)data;
++	GtkWidget *qs_entry;
++
++	if (!mainwin || !mainwin->summaryview || !mainwin->summaryview->quicksearch)
++		return;
++
++	qs_entry = quicksearch_get_entry(mainwin->summaryview->quicksearch);
++	if (qs_entry) {
++		gtk_entry_set_text(GTK_ENTRY(qs_entry), gtk_entry_get_text(entry));
++		gtk_widget_activate(qs_entry);
++	}
++}
+ #include "compose.h"
+ #include "utils.h"
+ #include "xml.h"
+@@ -2300,7 +2343,8 @@ Toolbar *toolbar_create(ToolbarType 	 type,
+ 
+ 	gtk_orientable_set_orientation(GTK_ORIENTABLE(toolbar), GTK_ORIENTATION_HORIZONTAL);
+ 
+-	gtk_toolbar_set_style(GTK_TOOLBAR(toolbar), GTK_TOOLBAR_BOTH);
++	gtk_toolbar_set_style(GTK_TOOLBAR(toolbar), GTK_TOOLBAR_BOTH_HORIZ);
++	gtk_style_context_add_class(gtk_widget_get_style_context(toolbar), "lumina-toolbar");
+ 	gtk_toolbar_set_show_arrow(GTK_TOOLBAR(toolbar), TRUE);
+ 	gtk_widget_set_hexpand(toolbar, TRUE);
+ 	
+@@ -2619,6 +2663,37 @@ Toolbar *toolbar_create(ToolbarType 	 type,
+ 		}
+ 
+ 	}
++	/* Apply pill-shaped Glass styling to all toolbar buttons */
++	{
++		GList *children = gtk_container_get_children(GTK_CONTAINER(toolbar));
++		for (GList *l = children; l != NULL; l = l->next) {
++			GtkWidget *child = GTK_WIDGET(l->data);
++			gboolean is_primary = (child == toolbar_data->compose_mail_btn);
++			lumina_apply_pill_style(child, GINT_TO_POINTER(is_primary));
++		}
++		g_list_free(children);
++	}
++
++	if (type == TOOLBAR_MAIN) {
++		GtkToolItem *spacer = gtk_separator_tool_item_new();
++		GtkToolItem *search_item = gtk_tool_item_new();
++		GtkWidget *search_entry = gtk_search_entry_new();
++
++		gtk_separator_tool_item_set_draw(GTK_SEPARATOR_TOOL_ITEM(spacer), FALSE);
++		gtk_tool_item_set_expand(spacer, TRUE);
++		gtk_toolbar_insert(GTK_TOOLBAR(toolbar), spacer, -1);
++
++		gtk_entry_set_placeholder_text(GTK_ENTRY(search_entry), _("Search mail..."));
++		gtk_style_context_add_class(gtk_widget_get_style_context(search_entry), "lumina-search");
++		g_signal_connect(G_OBJECT(search_entry), "search-changed",
++				 G_CALLBACK(lumina_toolbar_search_changed_cb), data);
++		g_signal_connect(G_OBJECT(search_entry), "activate",
++				 G_CALLBACK(lumina_toolbar_search_activate_cb), data);
++
++		gtk_container_add(GTK_CONTAINER(search_item), search_entry);
++		gtk_toolbar_insert(GTK_TOOLBAR(toolbar), search_item, -1);
++	}
++
+ 	toolbar_data->toolbar = toolbar;
+ 
+ 	gtk_widget_show_all(toolbar);
+diff --git a/src/wizard.c b/src/wizard.c
+index 16f5c3d..c6b3eb9 100644
+--- a/src/wizard.c
++++ b/src/wizard.c
+@@ -1831,7 +1831,7 @@ gboolean run_wizard(MainWindow *mainwin, gboolean create_mailbox) {
+ 	
+ 	wizard_read_defaults();
+ 	
+-	wizard->window = gtk_dialog_new_with_buttons (_("Claws Mail Setup Wizard"),
++	wizard->window = gtk_dialog_new_with_buttons (_("Lumina Mail Setup Wizard"),
+ 			NULL, 0, 
+ 			_("_Previous"), GO_BACK,
+ 			_("_Next"), GO_FORWARD,
+@@ -1863,18 +1863,18 @@ gboolean run_wizard(MainWindow *mainwin, gboolean create_mailbox) {
+ 
+ /*welcome page: 0 */
+ 	WELCOME_PAGE = i;
+-	page = create_page(wizard, _("Welcome to Claws Mail"));
++	page = create_page(wizard, _("Welcome to Lumina Mail"));
+ 	
+ 	wizard->pages = g_slist_append(wizard->pages, page);
+ 	widget = priv_pixmap_widget(PRIV_PIXMAP_CLAWS_MAIL_LOGO);
+ 
+ 	gtk_box_pack_start (GTK_BOX(page), widget, FALSE, FALSE, 0);
+ 	
+-	text = g_strdup(_("Welcome to the Claws Mail setup wizard.\n\n"
++	text = g_strdup(_("Welcome to the Lumina Mail setup wizard.\n\n"
+ 			  "We will begin by defining some basic "
+ 			  "information about you and your most common "
+ 			  "mail options so that you can start to use "
+-			  "Claws Mail in less than five minutes."));
++			  "Lumina Mail in less than five minutes."));
+ 	widget = gtk_label_new(text);
+ 	gtk_label_set_line_wrap(GTK_LABEL(widget), TRUE);
+ 	gtk_box_pack_start (GTK_BOX(page), widget, FALSE, FALSE, 0);
+@@ -1948,7 +1948,7 @@ gboolean run_wizard(MainWindow *mainwin, gboolean create_mailbox) {
+ 
+ 	gtk_box_pack_start (GTK_BOX(page), widget, FALSE, FALSE, 0);
+ 	
+-	text = g_strdup(_("Claws Mail is now ready.\n"
++	text = g_strdup(_("Lumina Mail is now ready.\n"
+ 			  "Click Save to start."));
+ 	widget = gtk_label_new(text);
+ 	gtk_box_pack_start (GTK_BOX(page), widget, FALSE, FALSE, 0);

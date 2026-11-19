@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <defs>
+    <!-- iOS Mail signature flat sky-blue vertical gradient -->
+    <linearGradient id="iosMailBg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#196EF0"/>
+      <stop offset="55%" stop-color="#38A1FA"/>
+      <stop offset="100%" stop-color="#64D2FF"/>
+    </linearGradient>
+
+    <!-- Matching gradient for clean flat fold lines -->
+    <linearGradient id="foldStroke" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#237EF4"/>
+      <stop offset="100%" stop-color="#53C1FE"/>
+    </linearGradient>
+
+    <clipPath id="envClip">
+      <rect x="202" y="294" width="620" height="436" rx="44" ry="44"/>
+    </clipPath>
+  </defs>
+
+  <!-- Flat iOS-style squircle container -->
+  <rect x="64" y="64" width="896" height="896" rx="204" ry="204" fill="url(#iosMailBg)"/>
+
+  <!-- Flat white envelope body -->
+  <rect x="202" y="294" width="620" height="436" rx="44" ry="44" fill="#FFFFFF"/>
+
+  <g clip-path="url(#envClip)">
+    <!-- Bottom-left and bottom-right envelope fold lines -->
+    <path d="M 210 722 L 406 528"
+          fill="none" stroke="url(#foldStroke)" stroke-width="18" stroke-linecap="round"/>
+    <path d="M 814 722 L 618 528"
+          fill="none" stroke="url(#foldStroke)" stroke-width="18" stroke-linecap="round"/>
+
+    <!-- Crisp white fill behind top flap to ensure clean overlap -->
+    <path d="M 202 294 L 512 552 L 822 294 Z"
+          fill="#FFFFFF" stroke="none"/>
+
+    <!-- Top V-flap fold line (iOS Mail silhouette) -->
+    <path d="M 210 308 L 490 538 Q 512 556 534 538 L 814 308"
+          fill="none" stroke="url(#foldStroke)" stroke-width="20"
+          stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+</svg>

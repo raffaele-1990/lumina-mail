@@ -1,0 +1,6 @@
+{
+  "name": "Lumina Mail Studio",
+  "description": "Anteprima interattiva dell'interfaccia Safari/Luminous Aqua e kit di compilazione open-source hardened per Lumina Mail su Windows.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
